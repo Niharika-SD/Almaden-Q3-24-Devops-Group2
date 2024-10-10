@@ -1,0 +1,32 @@
+os: linux
+dist: focal  
+
+language: python
+python:
+  - "3.9"
+
+services:
+  - postgresql  
+
+env:
+  global:
+    - POSTGRES_USER=postgres 
+    - POSTGRES_DB=test_db     
+    - POSTGRES_PASSWORD=       
+    - DATABASE_URL=postgresql://postgres@localhost/test_db 
+
+before_install:
+  - sudo apt-get update
+  - pip install --upgrade pip wheel setuptools  
+
+before_script:
+  - psql -c 'CREATE DATABASE test_db;' -U postgres 
+  - psql -c 'CREATE USER test_user WITH PASSWORD '\''test_password'\'';' -U postgres  
+  - psql -c 'GRANT ALL PRIVILEGES ON DATABASE test_db TO test_user;' -U postgres  
+
+install:
+  - pip install -r requirements.txt  
+
+script:
+  - flake8 service --count --select=E9,F63,F7,F82 --show-source --statistics  
+  - flake8 service --count --max-complexity=10 --max-line-length=127 --statistics
